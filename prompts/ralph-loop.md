@@ -78,7 +78,21 @@ You have access to these MCP (Model Context Protocol) servers:
 
    **IMPORTANT: Always load the `git` skill when initializing new projects or working with package managers (npm, pip, etc.).** The git skill provides critical guidance on `.gitignore` setup and git workflow best practices.
 
-   **IMPORTANT: Always search for and load the `agent-browser` skill when working with web applications or when a development server is running.** When you detect that a server is running (e.g., "server is running on port 5174"), you should use `agent-browser` to test and interact with the application in the browser. Search for it using `search_skills("agent-browser")` or `search_skills("browser")` and then load it with `load_skill("agent-browser")`.
+   **MANDATORY: Always load the `agent-browser` skill for web applications.** Before starting ANY work on web applications, frontend tasks, or when you see development servers running, execute these commands IMMEDIATELY:
+
+   ```javascript
+   // Load browser testing skill
+   load_skill("agent-browser")
+   ```
+
+   Use agent-browser for ALL verification steps that require browser interaction. Do NOT skip browser testing - it is mandatory for web application tasks.
+
+   **QUALITY ASSURANCE REQUIREMENT: Never mark a task complete without demonstrating working functionality.** You MUST:
+   - Run the application and verify it works
+   - Test core user flows in the actual environment
+   - Check for console errors and runtime issues
+   - Verify UI/UX matches specifications
+   - Only mark complete after functional verification, not just code completion
 
    **Additional SkillPort Usage:**
    - search_skills(query): Search by keyword/description (e.g. "react best practices", "component accessibility")

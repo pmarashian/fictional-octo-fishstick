@@ -605,14 +605,14 @@ async function generateTasksWithOpenAI(prdOutput, maxIterations = 5) {
           type: "json_schema",
           json_schema: {
             name: "task_breakdown",
-            schema: {
-              title: "task_breakdown",
-              type: "object",
-              properties: {
-                tasks: {
-                  type: "array",
-                  description: "Array of tasks broken down from the PRD",
-                  items: {
+        schema: {
+          title: "task_breakdown",
+          type: "object",
+          properties: {
+            userStories: {
+              type: "array",
+              description: "Array of user stories broken down from the PRD",
+              items: {
                     type: "object",
                     properties: {
                       id: {
@@ -621,12 +621,14 @@ async function generateTasksWithOpenAI(prdOutput, maxIterations = 5) {
                       },
                       description: {
                         type: "string",
-                        description: "Main task description",
+                        description: "Specific, actionable task description with file paths and technical details",
                       },
                       success_criteria: {
                         type: "array",
                         items: { type: "string" },
-                        description: "Array of success criteria for this task",
+                        description: "Array of 3-5 specific, testable acceptance criteria",
+                        minItems: 3,
+                        maxItems: 5,
                       },
                       dependencies: {
                         type: "array",
@@ -639,6 +641,12 @@ async function generateTasksWithOpenAI(prdOutput, maxIterations = 5) {
                         enum: ["backend", "frontend-ui", "frontend-logic"],
                         description: "Suggested role for this task",
                       },
+                      priority: {
+                        type: "integer",
+                        description: "Priority level 1-100 (1 = highest priority)",
+                        minimum: 1,
+                        maximum: 100,
+                      },
                     },
                     required: [
                       "id",
@@ -646,11 +654,12 @@ async function generateTasksWithOpenAI(prdOutput, maxIterations = 5) {
                       "success_criteria",
                       "dependencies",
                       "suggested_role",
+                      "priority",
                     ],
                   },
                 },
               },
-              required: ["tasks"],
+              required: ["userStories"],
             },
           },
         },
@@ -680,7 +689,7 @@ async function generateTasksWithOpenAI(prdOutput, maxIterations = 5) {
       const trimmedFeedback = response.choice;
 
       if (trimmedFeedback === "yes") {
-        return parsed.tasks; // Return the parsed tasks array
+        return parsed.userStories; // Return the parsed user stories array
       } else if (trimmedFeedback === "edit") {
         const editResponse = await prompts({
           type: "text",
@@ -1006,7 +1015,6 @@ async function generatePRDWithContext(
   // Enhanced prompt with template structure and examples
   const prdPromptTemplate = await loadPrompt("prd-generation.md");
   const prdPrompt = prdPromptTemplate
-    .replace("${template}", template)
     .replace("${example1}", example1)
     .replace("${example2}", example2)
     .replace("${userMessage}", userMessage)
@@ -1253,12 +1261,16 @@ async function generateTaskFiles(tasks) {
 
   const tasksData = {
     created_at: new Date().toISOString(),
-    tasks: tasks.map((task) => ({
-      id: task.id,
+    userStories: tasks.map((task) => ({
+      id: `US-${String(task.id).padStart(3, '0')}`,
+      title: task.description.split(':')[0] || task.description.substring(0, 60),
       description: task.description,
-      suggested_role: task.suggested_role,
-      success_criteria: task.success_criteria,
+      acceptanceCriteria: task.success_criteria,
+      priority: task.priority,
       dependencies: task.dependencies,
+      suggested_role: task.suggested_role,
+      passes: false,
+      notes: "",
       completed: false,
       started_at: null,
       completed_at: null,
@@ -1309,7 +1321,7 @@ async function runTasksSequentially(tasks, projectPath, mcpConfig = null) {
   const featureBranch = `ralph-implementation-${Date.now()}`;
 
   console.log("\n=== Starting Sequential Task Execution ===");
-  console.log(`Total tasks: ${tasksData.tasks.length}`);
+  console.log(`Total user stories: ${tasksData.userStories.length}`);
   console.log(`Feature branch: ${featureBranch}\n`);
 
   // Checkout new branch from main
@@ -1324,7 +1336,7 @@ async function runTasksSequentially(tasks, projectPath, mcpConfig = null) {
 
   const results = [];
 
-  for (const task of tasksData.tasks) {
+  for (const task of tasksData.userStories) {
     if (task.completed) {
       console.log(`\n⊘ Skipping completed task ${task.id}`);
       continue;
@@ -1332,7 +1344,7 @@ async function runTasksSequentially(tasks, projectPath, mcpConfig = null) {
 
     const role = task.suggested_role || "developer";
 
-    console.log(`\n--- Task ${task.id}/${tasksData.tasks.length} ---`);
+    console.log(`\n--- User Story ${task.id}/${tasksData.userStories.length} ---`);
     console.log(`Role: ${role}`);
     console.log(`Description: ${task.description.substring(0, 80)}...`);
 
@@ -1465,7 +1477,7 @@ Dependencies: ${task.dependencies.join(", ")}`;
 
   console.log("\n=== Execution Complete ===");
   console.log(`Feature branch: ${featureBranch}`);
-  console.log(`Tasks completed: ${results.length}/${tasksData.tasks.length}`);
+  console.log(`User stories completed: ${results.length}/${tasksData.userStories.length}`);
   console.log(
     `\nTo merge to main: git checkout main && git merge ${featureBranch}`,
   );
@@ -1523,7 +1535,7 @@ async function actionRunDev(projectPath, mcpConfigForAgent) {
   }
 
   const devResults = await runTasksSequentially(
-    selectedTasks.tasksData.tasks,
+    selectedTasks.tasksData.userStories,
     projectPath,
     mcpConfigForAgent,
   );
