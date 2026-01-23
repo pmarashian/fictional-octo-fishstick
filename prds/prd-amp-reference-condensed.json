@@ -1,0 +1,117 @@
+{
+  "project": "Clans",
+  "branchName": "ralph/clans-mvp",
+  "description": "Clans MVP - Mobile-first app for private, clan-based sharing with multi-clan posting, personalized names/emojis, and granular push notifications",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Initialize Next.js Backend Project",
+      "description": "As a developer, I need a Next.js backend API project scaffolded so I have a foundation for all API endpoints.",
+      "acceptanceCriteria": [
+        "Next.js 14+ project with App Router and TypeScript configured",
+        "Project runs locally and typecheck passes"
+      ],
+      "priority": 1
+    },
+    {
+      "id": "US-003",
+      "title": "Create Clans Hash Schema",
+      "description": "As a developer, I need the Redis hash structure for clans so clan data can be stored.",
+      "acceptanceCriteria": [
+        "Helper functions for clan hash operations with schema: key `clan:{id}`, fields: name, description, owner_id, emoji, created_at",
+        "Utility to generate unique clan IDs and typecheck passes"
+      ],
+      "priority": 3
+    },
+    {
+      "id": "US-006",
+      "title": "Create Posts Hash Schema",
+      "description": "As a developer, I need Redis hash structure for posts so content can be stored.",
+      "acceptanceCriteria": [
+        "Hash key pattern: `post:{id}` with fields: user_id, content (JSON), tags (array), clan_ids (array), created_at, posted_by, media_type",
+        "Utility to generate unique post IDs and typecheck passes"
+      ],
+      "priority": 6
+    },
+    {
+      "id": "US-013",
+      "title": "Set Up S3 Media Storage",
+      "description": "As a developer, I need S3 configured for photo/media uploads.",
+      "acceptanceCriteria": [
+        "S3 client configured with environment variables and presigned URL generation for uploads/downloads",
+        "Typecheck passes"
+      ],
+      "priority": 13
+    },
+    {
+      "id": "US-017",
+      "title": "Create Clan API Endpoint",
+      "description": "As a user, I want to create a clan so I can start a private sharing group.",
+      "acceptanceCriteria": [
+        "POST /api/clans accepts {name, description, emoji}, creates clan hash with owner_id from auth, adds owner to clan_members with admin role",
+        "Adds clan to user_clans, returns clan_id, and typecheck passes"
+      ],
+      "priority": 17
+    },
+    {
+      "id": "US-028",
+      "title": "Create Post API Endpoint",
+      "description": "As a user, I want to create a post so I can share content with my clans.",
+      "acceptanceCriteria": [
+        "POST /api/posts accepts {content, clan_ids, tags}, validates user is member of all clan_ids, creates post hash with auto-tags",
+        "Adds to clan_feed sorted sets for each clan_id and user_posts/type_posts sorted sets, returns post_id, and typecheck passes"
+      ],
+      "priority": 28
+    },
+    {
+      "id": "US-038",
+      "title": "Get Combined Feed",
+      "description": "As a user, I want a combined feed of all my clans so I can see everything at once.",
+      "acceptanceCriteria": [
+        "GET /api/feeds/combined accepts {page, limit}, aggregates posts from all user_clans using zunionstore, sorted by created_at DESC",
+        "Deduplicates multi-clan posts (show once with multi-clan indicator), includes clan_metadata with personalized names/emojis, and typecheck passes"
+      ],
+      "priority": 38
+    },
+    {
+      "id": "US-053",
+      "title": "Implement Authentication UI",
+      "description": "As a user, I want login/signup screens so I can access the app.",
+      "acceptanceCriteria": [
+        "Login page with email/password, signup page with email/password, JWT stored securely (capacitor secure storage)",
+        "Redirects to feed on success, typecheck passes, and verify in browser using dev-browser skill"
+      ],
+      "priority": 53
+    },
+    {
+      "id": "US-059",
+      "title": "Implement Combined Feed UI",
+      "description": "As a user, I want to see a combined feed of all my clans.",
+      "acceptanceCriteria": [
+        "Chronological list of posts from all clans, each post shows clan badge with personalized name/emoji, multi-clan posts show \"In X clans\" indicator",
+        "Infinite scroll pagination, typecheck passes, and verify in browser using dev-browser skill"
+      ],
+      "priority": 59
+    },
+    {
+      "id": "US-061",
+      "title": "Implement Compose Post UI",
+      "description": "As a user, I want to create a new post with text and media.",
+      "acceptanceCriteria": [
+        "Text input (up to 1000 chars), media picker (up to 20 photos), clan selector with checkboxes and emojis",
+        "Preview shows \"Visible to: Clan A, Clan B\", submit creates post, typecheck passes, and verify in browser using dev-browser skill"
+      ],
+      "priority": 61
+    },
+    {
+      "id": "US-069",
+      "title": "Implement Threaded Comments with Rich Text",
+      "description": "As a user, I want to reply to comments in threads with rich text formatting so I can have structured discussions.",
+      "acceptanceCriteria": [
+        "Comments support threaded replies up to 5 levels deep, rich text support: emojis and links in comment text, comment hash stores parent_comment_id for threading",
+        "GET /api/posts/{id}/comments returns nested thread structure, UI displays threaded replies with indentation, and typecheck passes"
+      ],
+      "priority": 69
+    }
+  ]
+}

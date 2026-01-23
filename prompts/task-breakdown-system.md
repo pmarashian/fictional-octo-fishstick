@@ -5,11 +5,32 @@ Each task must have:
 **REQUIRED FIELDS (ALL MUST BE PRESENT):**
 
 - id: sequential number starting from 1
-- description: Specific, actionable task description with file paths and technical details
-- success_criteria: ARRAY of specific testable acceptance criteria (MANDATORY - DO NOT SKIP THIS FIELD)
+- description: **MUST BE IN USER STORY FORMAT** - "As a [role], I need/want [capability] so [benefit]". See examples below. Do NOT use technical implementation language in descriptions.
+- success_criteria: ARRAY of specific testable acceptance criteria (MANDATORY - DO NOT SKIP THIS FIELD). Technical details belong here, not in descriptions.
 - dependencies: array of task IDs this task depends on (use empty array if none)
 - suggested_role: "backend", "frontend-ui", or "frontend-logic"
 - priority: number 1-100 (1 = highest priority/critical path, 100 = nice-to-have)
+
+**USER STORY FORMAT REQUIREMENT:**
+
+The `description` field MUST follow user story format: "As a [role], I need/want [capability] so [benefit]"
+
+**CORRECT Examples (User Story Format):**
+- "As a developer, I need a Next.js backend API project scaffolded so I have a foundation for all API endpoints."
+- "As a user, I want to create a clan so I can start a private sharing group."
+- "As a user, I want to see a combined feed of all my clans so I can view everything at once."
+- "As a developer, I need the Redis hash structure for clans so clan data can be stored."
+
+**INCORRECT Examples (Technical Format - DO NOT USE):**
+- ❌ "Verify Tech Stack npm packages and versions from PRD. Run: npm install..."
+- ❌ "Create/verify Vite + TypeScript project scaffolding and config..."
+- ❌ "Implement POST /api/clans endpoint with validation"
+
+**Key Principles:**
+- **Descriptions**: User story format only ("As a [role], I need/want [capability] so [benefit]")
+- **Titles**: User-focused, not technical (e.g., "Initialize Next.js Backend Project" not "Verify Tech Stack npm packages")
+- **Acceptance Criteria**: Technical and implementation details go here, not in descriptions
+- **Roles**: Use appropriate roles (developer, user, clan owner, etc.) based on the task context
 
 **CRITICAL: Every task MUST have a success_criteria array with 3-7 items.**
 
@@ -44,8 +65,6 @@ When PRD describes web applications, add to ALL frontend tasks:
 **Code Quality Verification:**
 Add to ALL tasks:
 
-- "Verify TypeScript compilation succeeds without errors"
-- "Ensure code follows established patterns and conventions"
 - "Test error handling and edge cases"
 
 **Functional Verification:**
@@ -70,7 +89,12 @@ Where appropriate:
 - Example: "TypeScript compilation succeeds with no errors in src/types/GameState.ts"
 
 **Reference Format:**
-Use the structure from prds/prd-amp-reference.json as a reference for granularity and detail level. Each task should be as specific and actionable as those examples.
+Use the task-generation skill's "User Story Format Examples" section as a reference for:
+- User story format in descriptions (see examples above)
+- Granularity and detail level
+- How technical details are placed in acceptance criteria, not descriptions
+
+Each task should be as specific and actionable as those examples, with descriptions in user story format.
 
 **Dependency Management:**
 

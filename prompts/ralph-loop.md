@@ -82,7 +82,7 @@ You have access to these MCP (Model Context Protocol) servers:
 
    ```javascript
    // Load browser testing skill
-   load_skill("agent-browser")
+   load_skill("agent-browser");
    ```
 
    Use agent-browser for ALL verification steps that require browser interaction. Do NOT skip browser testing - it is mandatory for web application tasks.
@@ -93,6 +93,7 @@ You have access to these MCP (Model Context Protocol) servers:
    - Check for console errors and runtime issues
    - Verify UI/UX matches specifications
    - Only mark complete after functional verification, not just code completion
+   - Verify TypeScript compilation succeeds without errors for any TypeScript code
 
    **Additional SkillPort Usage:**
    - search_skills(query): Search by keyword/description (e.g. "react best practices", "component accessibility")
@@ -119,6 +120,7 @@ You have access to these MCP (Model Context Protocol) servers:
 **CRITICAL: Load the `agent-browser` skill first before using browser automation tools.** Search for it using `search_skills("agent-browser")` or `search_skills("browser")` and then load it with `load_skill("agent-browser")` to get complete instructions and best practices.
 
 **When to use agent-browser:**
+
 - When working with web applications
 - When a development server is running (e.g., "server is running on port 5174", "dev server started on http://localhost:3000")
 - When you need to test or verify web application functionality in a browser
