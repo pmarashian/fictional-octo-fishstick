@@ -1,0 +1,16 @@
+{
+  "name": "ralph-orchestrator",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "ralph": "./ralph.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.4.0",
+    "@nothumanwork/cursor-agents-sdk": "^0.7.0",
+    "dotenv": "^16.4.5",
+    "fs-extra": "^11.3.3",
+    "openai": "^6.16.0",
+    "prompts": "^2.4.2"
+  }
+}
