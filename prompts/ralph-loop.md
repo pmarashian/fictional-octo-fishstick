@@ -116,9 +116,36 @@ You have access to these MCP (Model Context Protocol) servers:
    - Tools: create_character, animate_character, get_character, list_characters, delete_character, create_topdown_tileset, get_topdown_tileset, list_topdown_tilesets, delete_topdown_tileset, create_sidescroller_tileset, get_sidescroller_tileset, list_sidescroller_tilesets, delete_sidescroller_tileset, create_isometric_tile, get_isometric_tile, list_isometric_tiles, delete_isometric_tile
    - Use for: Generating pixel art game assets (characters, animations, tilesets) directly from code
 
-   **CRITICAL: Non-Blocking Operations**
+   **CRITICAL: Non-Blocking Operations & Asset Download Workflow**
 
-   All creation tools return immediately with job IDs - they process in the background (2-5 minutes). Submit request → Get job ID instantly → Check status with `get_*` tool → Download when ready. UUID serves as access key - no authentication needed for downloads.
+   All creation tools return immediately with job IDs - they process in the background (2-5 minutes). You MUST follow this complete workflow:
+
+   1. **Create**: Submit request → Get job ID instantly
+   2. **Wait**: Poll status using the appropriate `get_*` tool (e.g., `get_character`, `get_topdown_tileset`) until status is "completed"
+   3. **Download**: Use the download URL from the completed asset to download the file(s)
+   4. **Save**: Save downloaded files to appropriate locations in the codebase (e.g., `assets/`, `public/`, `src/assets/`, `public/images/`)
+   5. **Use Local Files**: Reference the local file paths in your code - NEVER use external URLs
+
+   **MANDATORY: All Assets Must Be Local Files**
+
+   - **PROHIBITED**: Using external URLs from PixelLab download links in your code
+   - **REQUIRED**: Download all asset files and save them to the codebase
+   - **REQUIRED**: Use local file paths when referencing assets in code
+   - Save assets to project-appropriate directories:
+     - Web projects: `public/`, `public/images/`, `src/assets/`, or `assets/`
+     - Game projects: `assets/`, `src/assets/`, or project-specific asset directories
+     - Check the project structure to determine the appropriate location
+
+   **Example Complete Workflow:**
+
+   ```
+   1. create_character(...) → Returns character_id
+   2. get_character(character_id) → Check status, repeat until "completed"
+   3. Extract download URL from completed character data
+   4. Download ZIP/image files using the download URL
+   5. Save to codebase: assets/characters/character_name.zip or assets/characters/character_name.png
+   6. Reference in code: "./assets/characters/character_name.png" (NOT the external URL)
+   ```
 
    **When working with PixelLab tools:**
    - Load the `pixellab-mcp` skill for complete documentation: `load_skill("pixellab-mcp")`

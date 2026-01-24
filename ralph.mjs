@@ -32,6 +32,7 @@ import { actionCreateTasks } from "./lib/task-generator.mjs";  // Phase 2: Task 
 import { actionRunDev, actionDev, actionRestartDev } from "./lib/dev-executor.mjs";  // Phase 3: Development execution with agents
 import { actionResetTasks } from "./lib/task-reset.mjs";      // Task reset functionality
 import { actionLearnSkills } from "./lib/skill-learner.mjs";  // Skill learning from progress
+import { analyzeLogs } from "./lib/log-analyzer.mjs";          // Log analysis functionality
 
 /**
  * Main orchestrator entry point and menu loop controller
@@ -129,6 +130,12 @@ async function main() {
           } else {
             console.log(`\n✗ ${learnResult.message}`);
           }
+          break;
+
+        case "analyze_logs":
+          // Analyze Logs: Analyze task execution logs for issues, insights, and feedback
+          // Provides comprehensive analysis of development workflow execution
+          await analyzeLogs();
           break;
 
         default:
