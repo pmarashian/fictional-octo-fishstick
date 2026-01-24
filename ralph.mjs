@@ -29,7 +29,9 @@ import { showMainMenu } from "./lib/menu.mjs";
 // Workflow phase imports - each handles a major step in the development process
 import { actionCreatePRD } from "./lib/prd-generator.mjs";     // Phase 1: PRD generation from user requirements
 import { actionCreateTasks } from "./lib/task-generator.mjs";  // Phase 2: Task breakdown from PRDs
-import { actionRunDev } from "./lib/dev-executor.mjs";         // Phase 3: Development execution with agents
+import { actionRunDev, actionDev, actionRestartDev } from "./lib/dev-executor.mjs";  // Phase 3: Development execution with agents
+import { actionResetTasks } from "./lib/task-reset.mjs";      // Task reset functionality
+import { actionLearnSkills } from "./lib/skill-learner.mjs";  // Skill learning from progress
 
 /**
  * Main orchestrator entry point and menu loop controller
@@ -95,6 +97,38 @@ async function main() {
           // Phase 3: Execute development tasks using AI agents
           // Run the development workflow with progress tracking
           await actionRunDev(projectPath, mcpConfigForAgent);
+          break;
+
+        case "dev":
+          // Streamlined Dev: Auto-load tasks.json and start/resume development
+          // No user prompting - assumes tasks.json exists and starts from first incomplete task
+          await actionDev(projectPath, mcpConfigForAgent);
+          break;
+
+        case "restart_dev":
+          // Restart Dev: Resume development after interruption with recovery logic
+          // Enhanced recovery features and detailed status reporting
+          await actionRestartDev(projectPath, mcpConfigForAgent);
+          break;
+
+        case "reset_tasks":
+          // Reset Tasks: Clear completion status from tasks.json
+          // Allows users to restart development on completed tasks
+          await actionResetTasks();
+          break;
+
+        case "learn_skills":
+          // Learn Skills: Extract learnings from progress.txt and create/update skills
+          // Converts project learnings into reusable Agent Skills
+          const learnResult = await actionLearnSkills();
+          if (learnResult.success) {
+            console.log(`\n✓ ${learnResult.message}`);
+            if (learnResult.stats) {
+              console.log(`  Created: ${learnResult.stats.created}, Updated: ${learnResult.stats.updated}`);
+            }
+          } else {
+            console.log(`\n✗ ${learnResult.message}`);
+          }
           break;
 
         default:

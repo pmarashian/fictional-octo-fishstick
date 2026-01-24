@@ -87,6 +87,15 @@ You have access to these MCP (Model Context Protocol) servers:
 
    Use agent-browser for ALL verification steps that require browser interaction. Do NOT skip browser testing - it is mandatory for web application tasks.
 
+   **MANDATORY: Always load the `phaser-game-testing` skill for Phaser game projects.** Before starting ANY work on Phaser games or when you need to test Phaser game functionality, execute these commands IMMEDIATELY:
+
+   ```javascript
+   // Load Phaser game testing skill
+   load_skill("phaser-game-testing");
+   ```
+
+   Use phaser-game-testing for ALL verification steps that require Phaser game testing. Do NOT skip Phaser game testing - it is mandatory for Phaser game tasks.
+
    **QUALITY ASSURANCE REQUIREMENT: Never mark a task complete without demonstrating working functionality.** You MUST:
    - Run the application and verify it works
    - Test core user flows in the actual environment

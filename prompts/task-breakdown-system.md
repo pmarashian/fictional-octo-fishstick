@@ -88,6 +88,25 @@ Where appropriate:
 - Cover error cases and edge conditions
 - Example: "TypeScript compilation succeeds with no errors in src/types/GameState.ts"
 
+**CRITICAL: Exclude Generic Compilation/Verification Checks**
+
+DO NOT include generic compilation or verification checks in success criteria. These are handled automatically by the dev agent prompt and skills, not task-specific success criteria.
+
+**EXCLUDE (Generic - Handled by Dev Agent):**
+- ❌ "TypeScript compilation succeeds without errors"
+- ❌ "Code compiles without errors"
+- ❌ "No linting errors"
+- ❌ "All tests pass"
+- ❌ "No console errors" (unless testing a specific error-handling feature)
+
+**INCLUDE (Task-Specific - OK):**
+- ✅ "TypeScript compilation succeeds with no errors in src/types/GameState.ts" (when the task specifically creates/modifies that file)
+- ✅ "API endpoint returns 200 status for valid requests" (task-specific functionality)
+- ✅ "Component renders without errors when given valid props" (task-specific behavior)
+- ✅ "Console shows specific error message 'Invalid input' when validation fails" (testing specific error handling)
+
+**Rule of thumb:** If the success criterion applies to ALL tasks generically, it belongs in the dev agent prompt/skills, NOT in task success criteria. Only include criteria that are specific to the functionality being implemented in that particular task.
+
 **Reference Format:**
 Use the task-generation skill's "User Story Format Examples" section as a reference for:
 - User story format in descriptions (see examples above)
