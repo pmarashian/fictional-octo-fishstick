@@ -151,6 +151,28 @@ You have access to these MCP (Model Context Protocol) servers:
    - Load the `pixellab-mcp` skill for complete documentation: `load_skill("pixellab-mcp")`
    - The skill includes full API reference, workflows, examples, and best practices
 
+3. ElevenLabs MCP Server:
+   - Tools: text_to_speech, speech_to_text, text_to_sound_effects, voice_clone, create_agent, compose_music, and more
+   - Use for: Text-to-speech, speech-to-text, voice cloning, conversational AI agents, music composition, audio processing
+
+   **CRITICAL: Cost Warnings**
+   
+   **MANY TOOLS INCUR API COSTS** - Only use when explicitly requested by the user:
+   - Text-to-Speech (TTS) operations
+   - Speech-to-Text (STT) operations
+   - Voice cloning
+   - Agent creation and conversations
+   - Music composition
+   - Audio processing
+   - Outbound phone calls
+   
+   Always check with the user before using cost-incurring tools unless they explicitly request them.
+
+   **When working with ElevenLabs tools:**
+   - Load the `elevenlabs-mcp` skill for complete documentation: `load_skill("elevenlabs-mcp")`
+   - The skill includes full API reference, workflows, examples, parameters, and best practices
+   - Key capabilities: TTS with multiple voices/models, STT with diarization, voice cloning, conversational AI agents with knowledge bases, music composition, audio processing
+
 ## Browser Automation
 
 **CRITICAL: Load the `agent-browser` skill first before using browser automation tools.** Search for it using `search_skills("agent-browser")` or `search_skills("browser")` and then load it with `load_skill("agent-browser")` to get complete instructions and best practices.

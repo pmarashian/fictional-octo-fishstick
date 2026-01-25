@@ -33,6 +33,7 @@ import { actionRunDev, actionDev, actionRestartDev } from "./lib/dev-executor.mj
 import { actionResetTasks } from "./lib/task-reset.mjs";      // Task reset functionality
 import { actionLearnSkills } from "./lib/skill-learner.mjs";  // Skill learning from progress
 import { analyzeLogs } from "./lib/log-analyzer.mjs";          // Log analysis functionality
+import { actionCreateRecommendationsReport } from "./lib/recommendations-generator.mjs";  // Recommendations report generation
 
 /**
  * Main orchestrator entry point and menu loop controller
@@ -136,6 +137,12 @@ async function main() {
           // Analyze Logs: Analyze task execution logs for issues, insights, and feedback
           // Provides comprehensive analysis of development workflow execution
           await analyzeLogs();
+          break;
+
+        case "create_recommendations":
+          // Create Recommendations Report: Generate combined recommendations from log-analysis files
+          // Analyzes all log-analysis markdown files and creates a comprehensive recommendations report
+          await actionCreateRecommendationsReport(mcpConfigForAgent);
           break;
 
         default:
