@@ -28,7 +28,7 @@ import { showMainMenu } from "./lib/menu.mjs";
 
 // Workflow phase imports - each handles a major step in the development process
 import { actionCreatePRD } from "./lib/prd-generator.mjs";     // Phase 1: PRD generation from user requirements
-import { actionCreateTasks } from "./lib/task-generator.mjs";  // Phase 2: Task breakdown from PRDs
+import { actionCreateTasks, actionCreateTasksFromDescription } from "./lib/task-generator.mjs";  // Phase 2: Task breakdown from PRDs
 import { actionRunDev, actionDev, actionRestartDev } from "./lib/dev-executor.mjs";  // Phase 3: Development execution with agents
 import { actionResetTasks } from "./lib/task-reset.mjs";      // Task reset functionality
 import { actionLearnSkills } from "./lib/skill-learner.mjs";  // Skill learning from progress
@@ -93,6 +93,12 @@ async function main() {
           // Phase 2: Break down PRD into structured development tasks
           // Convert requirements into actionable, prioritized tasks
           await actionCreateTasks(mcpConfigForAgent);
+          break;
+
+        case "create_tasks_quick":
+          // Phase 2: Quick task generation from bugs/changes description
+          // Generate tasks without requiring a full PRD document
+          await actionCreateTasksFromDescription(mcpConfigForAgent);
           break;
 
         case "run_dev":

@@ -276,24 +276,40 @@ You have access to these MCP (Model Context Protocol) servers:
 
    **CRITICAL: Output Everything During Testing**
 
-   Since the screenshot analyzer MCP server is currently being tested, you MUST output ALL data that the MCP server returns. This includes:
+   **MANDATORY TESTING REQUIREMENT:** Since the screenshot analyzer MCP server is currently being tested, you MUST output ALL data that the MCP server returns. This includes:
 
-   - Full screenshot capture results (base64 data, metadata, etc.)
-   - Complete analysis responses from the vision API
+   - Full screenshot capture results (base64 data, metadata, file paths, viewport info, etc.)
+   - Complete analysis responses from the vision API (full text, JSON, all fields)
    - All error messages, status codes, and debugging information
-   - Any additional metadata or response fields
+   - Any additional metadata or response fields from the MCP server
+   - Tool call parameters and return values in their entirety
 
-   Do NOT filter, summarize, or truncate any output from the screenshot analyzer tools - output everything exactly as returned by the server. This is essential for testing and debugging the MCP server integration.
+   **DO NOT:**
+   - Filter, summarize, or truncate any output from the screenshot analyzer tools
+   - Hide or omit any part of the MCP server response
+   - Only show partial results or summaries
+
+   **DO:**
+   - Output everything exactly as returned by the server
+   - Display complete tool responses including all fields and metadata
+   - Show full base64 image data if present
+   - Include all analysis text/JSON without truncation
+   - Present all error information verbatim
+
+   This is essential for testing and debugging the MCP server integration. All output must be visible for evaluation.
 
    **Screenshot Analyzer Workflow:**
 
-   1. **Capture**: Use `capture_screenshot(url)` to capture a webpage
-   2. **Analyze**: Use `analyze_screenshot()` with the captured screenshot and custom analysis prompts
-   3. **Output Everything**: Display all returned data in full for testing purposes
+   1. **Load Skill**: Load the `screenshot-analysis` skill for complete documentation: `load_skill("screenshot-analysis")`
+   2. **Capture**: Use `capture_screenshot(url)` to capture a webpage
+   3. **Analyze**: Use `analyze_screenshot()` with the captured screenshot and custom analysis prompts
+   4. **Output Everything**: Display all returned data in full for testing purposes - show complete tool responses
 
    **When working with screenshot analyzer tools:**
-   - Load the `screenshot-analyzer-mcp` skill for complete documentation: `load_skill("screenshot-analyzer-mcp")`
-   - The skill includes full API reference, workflows, examples, and best practices
+   - **MANDATORY**: Load the `screenshot-analysis` skill first: `load_skill("screenshot-analysis")`
+   - The skill includes full API reference, workflows, examples, prompt crafting best practices, and common use cases
+   - Review the skill instructions before using screenshot analysis tools
+   - The skill provides guidance on prompt crafting, cost optimization, error handling, and workflow patterns
 
 ## Browser Automation
 
