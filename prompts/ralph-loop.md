@@ -140,6 +140,7 @@ You have access to these MCP (Model Context Protocol) servers:
    4. Load required skills based on task type:
       - Phaser tasks: `phaser-game-testing` (MANDATORY)
       - Web tasks: `agent-browser` (MANDATORY)
+      - Web tasks involving screenshots: `agent-browser` and `screenshot-handling` (MANDATORY)
       - TypeScript tasks: `typescript-incremental-check`
    5. Review skill instructions before proceeding
    6. Proceed with implementation
@@ -153,9 +154,12 @@ You have access to these MCP (Model Context Protocol) servers:
    ```javascript
    // Load browser testing skill
    load_skill("agent-browser");
+
+   // If screenshots will be captured, also load screenshot-handling skill
+   load_skill("screenshot-handling");
    ```
 
-   Use agent-browser for ALL verification steps that require browser interaction. Do NOT skip browser testing - it is mandatory for web application tasks.
+   Use agent-browser for ALL verification steps that require browser interaction. Do NOT skip browser testing - it is mandatory for web application tasks. When capturing screenshots, always use the `screenshot-handling` skill to ensure screenshots are saved to the dedicated `screenshots/` folder instead of the project root.
 
    **MANDATORY: Always load the `phaser-game-testing` skill for Phaser game projects.** Before starting ANY work on Phaser games or when you need to test Phaser game functionality, execute these commands IMMEDIATELY:
 
@@ -180,6 +184,7 @@ You have access to these MCP (Model Context Protocol) servers:
    - read_skill_file(skill_id, file_path): Read specific files from a skill directory
    - For React/UI/frontend tasks: ALWAYS search for and load relevant skills first
    - For web applications or when a dev server is running: ALWAYS search for and load the `agent-browser` skill
+   - For web tasks involving screenshots: ALWAYS load both `agent-browser` and `screenshot-handling` skills
    - Example workflow: search_skills("") → review results → load_skill("skill-id") → read_skill_file("skill-id", "script.py") if needed
 
 2. PixelLab MCP Server (https://api.pixellab.ai/mcp):
@@ -189,7 +194,6 @@ You have access to these MCP (Model Context Protocol) servers:
    **CRITICAL: Non-Blocking Operations & Asset Download Workflow**
 
    All creation tools return immediately with job IDs - they process in the background (2-5 minutes). You MUST follow this complete workflow:
-
    1. **Create**: Submit request → Get job ID instantly
    2. **Wait**: Poll status using the appropriate `get_*` tool (e.g., `get_character`, `get_topdown_tileset`) until status is "completed"
    3. **Download**: Use the download URL from the completed asset to download the file(s)
@@ -199,7 +203,6 @@ You have access to these MCP (Model Context Protocol) servers:
    **ASYNC OPERATION BEST PRACTICES:**
 
    When working with async operations (PixelLab, ElevenLabs, etc.):
-
    1. **Polling Strategy:**
       - Use exponential backoff: 5s → 10s → 20s → 40s intervals
       - Respect API-provided ETAs when available
@@ -224,7 +227,6 @@ You have access to these MCP (Model Context Protocol) servers:
       - Handle timeout errors gracefully
 
    **MANDATORY: All Assets Must Be Local Files**
-
    - **PROHIBITED**: Using external URLs from PixelLab download links in your code
    - **REQUIRED**: Download all asset files and save them to the codebase
    - **REQUIRED**: Use local file paths when referencing assets in code
@@ -253,7 +255,7 @@ You have access to these MCP (Model Context Protocol) servers:
    - Use for: Text-to-speech, speech-to-text, voice cloning, conversational AI agents, music composition, audio processing
 
    **CRITICAL: Cost Warnings**
-   
+
    **MANY TOOLS INCUR API COSTS** - Only use when explicitly requested by the user:
    - Text-to-Speech (TTS) operations
    - Speech-to-Text (STT) operations
@@ -262,7 +264,7 @@ You have access to these MCP (Model Context Protocol) servers:
    - Music composition
    - Audio processing
    - Outbound phone calls
-   
+
    Always check with the user before using cost-incurring tools unless they explicitly request them.
 
    **When working with ElevenLabs tools:**
@@ -271,39 +273,12 @@ You have access to these MCP (Model Context Protocol) servers:
    - Key capabilities: TTS with multiple voices/models, STT with diarization, voice cloning, conversational AI agents with knowledge bases, music composition, audio processing
 
 4. Screenshot Analyzer MCP Server:
-   - Tools: capture_screenshot(url), analyze_screenshot(screenshot, prompt)
-   - Use for: Capturing web page screenshots and analyzing them with AI vision
-
-   **CRITICAL: Output Everything During Testing**
-
-   **MANDATORY TESTING REQUIREMENT:** Since the screenshot analyzer MCP server is currently being tested, you MUST output ALL data that the MCP server returns. This includes:
-
-   - Full screenshot capture results (base64 data, metadata, file paths, viewport info, etc.)
-   - Complete analysis responses from the vision API (full text, JSON, all fields)
-   - All error messages, status codes, and debugging information
-   - Any additional metadata or response fields from the MCP server
-   - Tool call parameters and return values in their entirety
-
-   **DO NOT:**
-   - Filter, summarize, or truncate any output from the screenshot analyzer tools
-   - Hide or omit any part of the MCP server response
-   - Only show partial results or summaries
-
-   **DO:**
-   - Output everything exactly as returned by the server
-   - Display complete tool responses including all fields and metadata
-   - Show full base64 image data if present
-   - Include all analysis text/JSON without truncation
-   - Present all error information verbatim
-
-   This is essential for testing and debugging the MCP server integration. All output must be visible for evaluation.
+   - Tools: analyze_screenshot(screenshot, prompt)
+   - Use for: Analyzing screenshots with AI vision
 
    **Screenshot Analyzer Workflow:**
-
    1. **Load Skill**: Load the `screenshot-analysis` skill for complete documentation: `load_skill("screenshot-analysis")`
-   2. **Capture**: Use `capture_screenshot(url)` to capture a webpage
-   3. **Analyze**: Use `analyze_screenshot()` with the captured screenshot and custom analysis prompts
-   4. **Output Everything**: Display all returned data in full for testing purposes - show complete tool responses
+   2. **Analyze**: Use `analyze_screenshot()` with a captured screenshot and custom analysis prompts
 
    **When working with screenshot analyzer tools:**
    - **MANDATORY**: Load the `screenshot-analysis` skill first: `load_skill("screenshot-analysis")`
@@ -347,6 +322,7 @@ Before starting implementation:
 7. Test comprehensively
 
 This prevents:
+
 - Multiple rebuild cycles
 - Mid-testing code changes
 - Incomplete test coverage
