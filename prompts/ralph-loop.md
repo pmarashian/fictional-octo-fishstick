@@ -24,7 +24,70 @@ You need to read the following files directly to understand your task and contex
    - Best practices specific to this codebase
    - Guardrails and constraints
 
+## BEFORE IMPLEMENTING NEW FUNCTIONALITY
+
+**CRITICAL: Always verify existing implementations before coding**
+
+Before implementing any new functionality, you MUST:
+
+1. **Search codebase for existing implementations:**
+   - Use `codebase_search()` with relevant keywords
+   - Use `grep` to find function/class names
+   - Check test seam commands for feature indicators
+
+2. **Verify current state:**
+   - Run application if possible
+   - Check test seams for existing functionality
+   - Review progress.txt for recent implementations
+
+3. **Decision:**
+   - If feature exists: Switch to verification mode
+   - Verify functionality meets requirements
+   - Document findings in progress.txt
+   - Only implement if feature is missing or incomplete
+
+This prevents wasting 20-40% of time on redundant work.
+
+## File Context Management
+
+**CRITICAL: Optimize file reading to reduce overhead**
+
+1. **After reading a file:**
+   - Maintain its contents in your context
+   - Only re-read if you suspect external modifications
+   - Use targeted reads (line ranges) when checking specific sections
+
+2. **File Reading Strategy:**
+   - Read files once at the start of implementation phase
+   - Cache file contents mentally
+   - Re-read only when necessary (external changes, verification)
+
+3. **Optimization:**
+   - Batch file reads when possible
+   - Read only necessary sections of large files
+   - Use codebase search before deep file reading
+
+This prevents 2-5 seconds wasted per task on excessive file re-reading.
+
 ## Progress.txt Format
+
+**PROGRESS TRACKING REQUIREMENTS:**
+
+1. **Update progress.txt incrementally:**
+   - After major milestones
+   - When patterns are discovered
+   - Before task completion
+
+2. **Document Learnings:**
+   - Use "Learnings for future iterations:" section
+   - Include codebase patterns discovered
+   - Document successful approaches
+   - Note common pitfalls
+
+3. **Success Criteria Validation:**
+   - Explicitly verify each success criterion
+   - Document verification method used
+   - Update progress before completion marker
 
 When you complete work or learn something, append to `tasks/progress.txt`:
 
@@ -68,13 +131,20 @@ You have access to these MCP (Model Context Protocol) servers:
 
    **CRITICAL: Skill Discovery at Task Start**
 
-   At the beginning of each task (after reading the task file), you MUST:
-   1. Call `search_skills("")` with an empty query to list ALL available skills
-   2. Review the returned skill list to identify which skills might be relevant to your current task
-   3. For each potentially relevant skill, call `load_skill(skill_id)` to get the full skill instructions
-   4. Use the skill instructions to guide your implementation approach
+   **MANDATORY WORKFLOW - DO NOT SKIP:**
 
-   This ensures you're aware of all available skills and can leverage them appropriately.
+   At the beginning of each task, you MUST follow this exact sequence:
+   1. Read task file (`tasks/next_task.md`)
+   2. Read progress.txt for context (`tasks/progress.txt`)
+   3. Call `search_skills("")` with an empty query to discover ALL available skills
+   4. Load required skills based on task type:
+      - Phaser tasks: `phaser-game-testing` (MANDATORY)
+      - Web tasks: `agent-browser` (MANDATORY)
+      - TypeScript tasks: `typescript-incremental-check`
+   5. Review skill instructions before proceeding
+   6. Proceed with implementation
+
+   This ensures you're aware of all available skills and can leverage them appropriately. Never skip skill discovery - it is a mandatory step that prevents missing best practices and testing patterns.
 
    **IMPORTANT: Always load the `git` skill when initializing new projects or working with package managers (npm, pip, etc.).** The git skill provides critical guidance on `.gitignore` setup and git workflow best practices.
 
@@ -126,6 +196,33 @@ You have access to these MCP (Model Context Protocol) servers:
    4. **Save**: Save downloaded files to appropriate locations in the codebase (e.g., `assets/`, `public/`, `src/assets/`, `public/images/`)
    5. **Use Local Files**: Reference the local file paths in your code - NEVER use external URLs
 
+   **ASYNC OPERATION BEST PRACTICES:**
+
+   When working with async operations (PixelLab, ElevenLabs, etc.):
+
+   1. **Polling Strategy:**
+      - Use exponential backoff: 5s → 10s → 20s → 40s intervals
+      - Respect API-provided ETAs when available
+      - Don't poll more frequently than every 5 seconds
+      - Stop polling when status === "completed"
+
+   2. **Download Validation:**
+      - ALWAYS verify status === "completed" before download
+      - Handle HTTP 423 (Locked) errors gracefully
+      - Don't attempt download until resource is ready
+
+   3. **Parallel Work:**
+      - Use waiting time for parallel work:
+        - Code integration
+        - Documentation
+        - Test preparation
+      - Don't wait idly for async operations
+
+   4. **Timeout Handling:**
+      - Set maximum timeout (e.g., 5 minutes for character generation)
+      - Log progress and ETA for transparency
+      - Handle timeout errors gracefully
+
    **MANDATORY: All Assets Must Be Local Files**
 
    - **PROHIBITED**: Using external URLs from PixelLab download links in your code
@@ -173,6 +270,31 @@ You have access to these MCP (Model Context Protocol) servers:
    - The skill includes full API reference, workflows, examples, parameters, and best practices
    - Key capabilities: TTS with multiple voices/models, STT with diarization, voice cloning, conversational AI agents with knowledge bases, music composition, audio processing
 
+4. Screenshot Analyzer MCP Server:
+   - Tools: capture_screenshot(url), analyze_screenshot(screenshot, prompt)
+   - Use for: Capturing web page screenshots and analyzing them with AI vision
+
+   **CRITICAL: Output Everything During Testing**
+
+   Since the screenshot analyzer MCP server is currently being tested, you MUST output ALL data that the MCP server returns. This includes:
+
+   - Full screenshot capture results (base64 data, metadata, etc.)
+   - Complete analysis responses from the vision API
+   - All error messages, status codes, and debugging information
+   - Any additional metadata or response fields
+
+   Do NOT filter, summarize, or truncate any output from the screenshot analyzer tools - output everything exactly as returned by the server. This is essential for testing and debugging the MCP server integration.
+
+   **Screenshot Analyzer Workflow:**
+
+   1. **Capture**: Use `capture_screenshot(url)` to capture a webpage
+   2. **Analyze**: Use `analyze_screenshot()` with the captured screenshot and custom analysis prompts
+   3. **Output Everything**: Display all returned data in full for testing purposes
+
+   **When working with screenshot analyzer tools:**
+   - Load the `screenshot-analyzer-mcp` skill for complete documentation: `load_skill("screenshot-analyzer-mcp")`
+   - The skill includes full API reference, workflows, examples, and best practices
+
 ## Browser Automation
 
 **CRITICAL: Load the `agent-browser` skill first before using browser automation tools.** Search for it using `search_skills("agent-browser")` or `search_skills("browser")` and then load it with `load_skill("agent-browser")` to get complete instructions and best practices.
@@ -193,6 +315,49 @@ Core workflow:
 3. `agent-browser snapshot -i` - Get interactive elements with refs (@e1, @e2)
 4. `agent-browser click @e1` / `fill @e2 "text"` - Interact using refs
 5. Re-snapshot after page changes
+
+### TEST SEAM PLANNING WORKFLOW
+
+**CRITICAL: Plan test seams before implementation**
+
+Before starting implementation:
+
+1. Review task requirements
+2. Identify testing needs
+3. Check existing test seam commands in codebase
+4. Plan additional test seam commands needed
+5. Implement feature + test seam commands together
+6. Build once
+7. Test comprehensively
+
+This prevents:
+- Multiple rebuild cycles
+- Mid-testing code changes
+- Incomplete test coverage
+
+### BROWSER TESTING OPTIMIZATION
+
+**Optimize browser testing to reduce overhead by 40-50%:**
+
+1. **Use Test Seams Efficiently:**
+   - Create composite test functions for common flows
+   - Batch independent checks with Promise.all()
+   - Use simple property checks instead of Promise polling
+
+2. **Test Seam Readiness:**
+   - Check `window.**TEST**?.sceneKey` directly
+   - Avoid Promise-based polling for readiness
+   - Use `Object.keys(window.**TEST**.commands)` for verification
+
+3. **Command Batching:**
+   - Group related verifications in single calls
+   - Use test seam composite functions when available
+   - Reduce wait times between commands
+
+4. **Cache Management:**
+   - Always use hard refresh in development
+   - Clear cache before testing code changes
+   - Use cache-busting URL parameters when needed
 
 ## DISCOVERY:
 
@@ -225,7 +390,121 @@ Other available tools:
 
 - Codebase search, file edit, terminal commands, etc. — use when needed.
 
+## Code Quality
+
+### TYPESCRIPT VALIDATION WORKFLOW
+
+**CRITICAL: Validate TypeScript immediately after changes**
+
+After making ANY TypeScript changes:
+
+1. **Run type-check IMMEDIATELY:**
+   - Run `npx tsc --noEmit` or `npm run type-check` IMMEDIATELY
+   - Do NOT proceed to testing until compilation succeeds
+
+2. **Fix errors systematically:**
+   - Address one error type at a time
+   - Re-run type-check after each fix
+   - Verify compilation before moving forward
+
+3. **Common issues to check:**
+   - Missing exports for imported functions
+   - Type conflicts (class vs type names)
+   - Property initialization in constructors
+   - Global type extensions (Window.**TEST**)
+
+This catches type errors 50-60% earlier, preventing 30-60 seconds wasted per task on multiple fix cycles.
+
+## Tool Selection Decision Framework
+
+**CRITICAL: Select appropriate tools for each task phase**
+
+Before calling any tool, ask:
+
+1. **Is this tool appropriate for the current task phase?**
+   - Testing phase → agent-browser, not text_to_speech
+   - Audio task → text_to_speech, not agent-browser
+
+2. **Is this tool necessary for the task?**
+   - Explain reasoning before calling
+   - Consider free alternatives first
+   - Verify tool availability/capability
+
+3. **Has this tool failed recently?**
+   - After 3 consecutive failures, switch to alternative
+   - Never retry the same failing tool indefinitely
+   - Use circuit breaker pattern for tool failures
+
+## Error Recovery Patterns
+
+**CRITICAL: Recover gracefully from tool failures**
+
+When a tool fails:
+
+1. **Assess the failure:**
+   - Is the tool appropriate for the task?
+   - Is this a transient error or permanent failure?
+   - How many times has it failed?
+
+2. **Recovery Strategy:**
+   - If inappropriate tool: Switch immediately
+   - If transient: Retry max 2 more times (3 total)
+   - If permanent: Use alternative approach
+   - After 3 failures: Never retry, use fallback
+
+3. **Fallback Methods:**
+   - Browser automation fails → Manual browser + checklist
+   - Build fails → Type check first, incremental fixes
+   - Test execution fails → Simplify test, verify prerequisites
+
+4. **Documentation:**
+   - Log which tool failed and why
+   - Document fallback method used
+   - Update progress.txt with learnings
+
 ## Task Completion
+
+### Functional Verification Mandate
+
+**CRITICAL: Task is NOT complete until ALL of the following are verified:**
+
+1. **TypeScript compilation succeeds** (no errors)
+2. **Application runs without crashes**
+3. **Functionality is verified in browser/runtime:**
+   - For web apps: Use agent-browser for testing
+   - For backend: Run unit tests or manual verification
+4. **No errors in console/logs**
+5. **Success criteria explicitly met and documented**
+
+**If primary testing tool fails:**
+
+- Use fallback testing methods (manual browser, unit tests, console verification)
+- Document verification method used
+- Never mark complete without functional verification
+
+### Completion Marker Protocol
+
+**CRITICAL: Output completion marker correctly**
+
+1. **Output Format:**
+   - Output `<ralph>COMPLETE</ralph>` as a SINGLE ATOMIC STRING
+   - Include in your final assistant response text
+   - Do NOT use shell echo commands
+   - Do NOT stream character-by-character
+
+2. **Timing:**
+   - Output immediately after final verification passes
+   - Do NOT perform cleanup operations after completion marker
+   - Signal completion before resource cleanup
+
+3. **Validation Before Completion:**
+   - All success criteria met
+   - Functional testing completed
+   - TypeScript compilation passed
+   - No console errors
+   - Progress.txt updated
+
+### Progress Documentation
 
 When you learn from a failure or discover a pattern, append it to `tasks/progress.txt` in the current task's learnings section (see Progress.txt Format above).
 
