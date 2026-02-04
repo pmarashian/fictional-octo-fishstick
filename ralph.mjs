@@ -65,6 +65,10 @@ async function main() {
   // Display welcome message and system branding
   console.log("\n=== Interactive Orchestrator ===\n");
 
+  // Track automatic restart attempts to prevent infinite loops
+  const MAX_AUTOMATIC_RESTARTS = 3;
+  let automaticRestartCount = 0;
+
   // Main interactive menu loop - continues until user chooses to exit
   // This loop provides the primary user interface, allowing multiple workflow
   // iterations and graceful error recovery
@@ -79,6 +83,9 @@ async function main() {
         console.log("\nExiting orchestrator. Goodbye!");
         break;
       }
+
+      // Reset automatic restart counter on successful action
+      automaticRestartCount = 0;
 
       // Route user selection to appropriate workflow action
       // Each case represents one phase of the development workflow
@@ -168,6 +175,33 @@ async function main() {
         // Expected cancellation (user pressed Ctrl+C or chose to cancel)
         // This is normal user behavior, not an error condition
         console.log("\nOperation cancelled. Returning to menu.");
+
+      } else if (error.message.startsWith("RESOURCE_EXHAUSTION_RESTART:")) {
+        // Automatic restart triggered by resource exhaustion
+        // Check if we've exceeded maximum restart attempts
+        if (automaticRestartCount >= MAX_AUTOMATIC_RESTARTS) {
+          console.log(`\n❌ Maximum automatic restart attempts (${MAX_AUTOMATIC_RESTARTS}) exceeded.`);
+          console.log("Please check your system resources and try again manually.");
+          console.log("Returning to menu.\n");
+          automaticRestartCount = 0; // Reset counter
+          continue;
+        }
+
+        // Extract the original error message for logging
+        const originalError = error.message.replace("RESOURCE_EXHAUSTION_RESTART:", "");
+        automaticRestartCount++;
+        console.log(`\n🔄 Resource exhaustion detected: ${originalError}`);
+        console.log(`Automatically restarting development workflow (attempt ${automaticRestartCount}/${MAX_AUTOMATIC_RESTARTS})...\n`);
+
+        // Automatically trigger restart_dev action
+        try {
+          await actionRestartDev(projectPath, mcpConfigForAgent);
+          // If restart succeeds, reset the counter
+          automaticRestartCount = 0;
+        } catch (restartError) {
+          console.error("\nError during automatic restart:", restartError.message);
+          console.log("Returning to menu.\n");
+        }
 
       } else {
         // Unexpected error occurred during workflow execution

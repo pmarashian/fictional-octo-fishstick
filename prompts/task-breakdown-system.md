@@ -62,6 +62,21 @@ When PRD describes web applications, add to ALL frontend tasks:
 - "Check browser console for errors during testing"
 - "Take screenshots to verify visual correctness"
 
+**Visual Validation (Screenshot Analyzer MCP):**
+For visual/game/UI tasks, add screenshot analyzer validation criteria when visual validation is needed:
+
+- "Use screenshot analyzer MCP to validate visual state from screenshots" (for visual state validation tasks)
+- "Use screenshot analyzer to verify UI elements appear correctly in screenshots" (for UI element verification)
+- "Use screenshot analyzer to validate scaling relationships and visual consistency" (for design/aesthetic validation)
+- "Use screenshot analyzer to provide feedback on asset design quality" (for asset validation tasks)
+
+**Complementary Tool Relationship:**
+- **agent-browser**: Use for interactive/programmatic testing, user interactions, state changes, and screenshot capture
+- **screenshot analyzer MCP**: Use for visual analysis of screenshots/images. Validates visual state, UI elements, design aesthetics, and asset quality. Can analyze any image, not just screenshots.
+- **Do not use ElevenLabs text_to_speech for screenshots or testing** — it generates audio only; screenshots come from agent-browser.
+
+**Workflow**: Use agent-browser to interact with the application and capture screenshots, then use screenshot analyzer to validate the visual state shown in those screenshots.
+
 **Code Quality Verification:**
 Add to ALL tasks:
 
