@@ -34,6 +34,8 @@ import { actionResetTasks } from "./lib/task-reset.mjs";      // Task reset func
 import { actionLearnSkills } from "./lib/skill-learner.mjs";  // Skill learning from progress
 import { analyzeLogs } from "./lib/log-analyzer.mjs";          // Log analysis functionality
 import { actionCreateRecommendationsReport } from "./lib/recommendations-generator.mjs";  // Recommendations report generation
+import { ResourceExhaustionError } from "./lib/agent-runner.mjs"; // Resource exhaustion error handling
+import { MAX_CONTEXT_SIZE_BYTES } from "./lib/config.mjs"; // Configuration constants
 
 /**
  * Main orchestrator entry point and menu loop controller
@@ -176,22 +178,47 @@ async function main() {
         // This is normal user behavior, not an error condition
         console.log("\nOperation cancelled. Returning to menu.");
 
-      } else if (error.message.startsWith("RESOURCE_EXHAUSTION_RESTART:")) {
+      } else if (error instanceof ResourceExhaustionError || error.message.startsWith("RESOURCE_EXHAUSTION_RESTART:")) {
         // Automatic restart triggered by resource exhaustion
         // Check if we've exceeded maximum restart attempts
         if (automaticRestartCount >= MAX_AUTOMATIC_RESTARTS) {
           console.log(`\n❌ Maximum automatic restart attempts (${MAX_AUTOMATIC_RESTARTS}) exceeded.`);
-          console.log("Please check your system resources and try again manually.");
+          console.log("This usually indicates persistent context accumulation issues.");
+          console.log("Consider breaking large tasks into smaller ones or checking your model limits.");
           console.log("Returning to menu.\n");
           automaticRestartCount = 0; // Reset counter
           continue;
         }
 
-        // Extract the original error message for logging
-        const originalError = error.message.replace("RESOURCE_EXHAUSTION_RESTART:", "");
+        // Extract error details for better messaging
+        let errorMessage = error.message;
+        let contextInfo = "";
+        if (error instanceof ResourceExhaustionError) {
+          errorMessage = error.message;
+          contextInfo = `\n💥 Resource exhaustion details:`;
+          if (error.contextSizeBytes) {
+            contextInfo += `\n  Context size: ${Math.round(error.contextSizeBytes/1024)}KB (limit: ${Math.round(MAX_CONTEXT_SIZE_BYTES/1024)}KB)`;
+          }
+          if (error.iteration) {
+            contextInfo += `\n  Failed at iteration: ${error.iteration}`;
+          }
+          if (error.runtimeMs) {
+            contextInfo += `\n  Task runtime: ${Math.round(error.runtimeMs/1000)}s`;
+          }
+          contextInfo += `\n  Cause: Conversation context exceeded AI model limits`;
+        } else {
+          errorMessage = error.message.replace("RESOURCE_EXHAUSTION_RESTART:", "");
+        }
+
         automaticRestartCount++;
-        console.log(`\n🔄 Resource exhaustion detected: ${originalError}`);
-        console.log(`Automatically restarting development workflow (attempt ${automaticRestartCount}/${MAX_AUTOMATIC_RESTARTS})...\n`);
+        console.log(`${contextInfo}`);
+        console.log(`\n🔄 Resource exhaustion detected: ${errorMessage}`);
+        console.log(`🔄 Recovery strategy: Starting fresh conversation session`);
+        console.log(`🔄 This prevents context accumulation across iterations`);
+        console.log(`🔄 Automatically restarting development workflow (attempt ${automaticRestartCount}/${MAX_AUTOMATIC_RESTARTS})...\n`);
+
+        // Add a brief delay before restart to allow system recovery
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
         // Automatically trigger restart_dev action
         try {
